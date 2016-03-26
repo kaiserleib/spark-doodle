@@ -12,4 +12,8 @@ publishMavenStyle := true
 
 crossPaths := false
 
+enablePlugins(JavaAppPackaging)
+
 mainClass in (Compile, run) := Some("doodle.Application")
+
+herokuAppName in Compile := "hidden-inlet-14409"

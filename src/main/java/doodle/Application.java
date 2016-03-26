@@ -12,6 +12,7 @@ public class Application {
 	static List<Session> sessions = new ArrayList<>();
 	
 	public static void main( String[] args) {
+		port(getHerokuAssignedPort());
 		staticFileLocation("public");
 		webSocket("/doodle", DoodleWebSocket.class);
 		init();
@@ -20,7 +21,7 @@ public class Application {
         });
     }
 	
-	//Sends a message from one user to all users, along with a list of current usernames
+	// Broadcasts the given string to all connected websocket sessions
 	public static void broadcastMessage(String message) {
 	    sessions.stream().filter(Session::isOpen).forEach(session -> {
 	        try {
@@ -31,4 +32,13 @@ public class Application {
 	        }
 	    });
 	}
+	
+	// Gets the assigned Heroku port, or 4567 if we're not on Heroku
+	static int getHerokuAssignedPort() {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        if (processBuilder.environment().get("PORT") != null) {
+            return Integer.parseInt(processBuilder.environment().get("PORT"));
+        }
+        return 4567; 
+    }
 }
