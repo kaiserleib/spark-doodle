@@ -19,7 +19,7 @@ public class DoodleWebSocket {
     }
 
     @OnWebSocketMessage
-    public void message(Session session, String message) throws IOException {
+    public void message(String message) throws IOException {
         Application.broadcastMessage(message);
     }
 
