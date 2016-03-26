@@ -9,9 +9,26 @@ document.addEventListener("DOMContentLoaded", function() {
 	var canvas  = document.getElementById('doodle');
 	var context = canvas.getContext('2d');
 	
+	
+	//Establish the WebSocket connection and set up event handlers
+	var socket = new WebSocket("ws://" + location.hostname + ":" + location.port + "/doodle");
+	
 	canvas.onmousedown = function(e) {
 		mouse.click = true;
+		
+		//re-establish the websocket on clicks so that we can keep doodling after heroku kills us
+	    socket = new WebSocket("ws://" + location.hostname + ":" + location.port + "/doodle");
 	};
+	
+    sendWhenConnected = function (message, interval) {
+        if (socket.readyState === 1) {
+            socket.send(message);
+        } else {
+            setTimeout(function () {
+                sendWhenConnected(socket.send(message), interval);
+            }, interval);
+        }
+    };
 	
 	canvas.onmouseup = function(e) {
 		mouse.click = false;
@@ -28,9 +45,6 @@ document.addEventListener("DOMContentLoaded", function() {
 		context.clearRect(0, 0, canvas.width, canvas.height);
 	}
 	
-	//Establish the WebSocket connection and set up event handlers
-	var socket = new WebSocket("ws://" + location.hostname + ":" + location.port + "/doodle");
-	
 	socket.onmessage = function (event) {
    		var parsedData = JSON.parse(event.data);
 		var line = parsedData.line;
@@ -46,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (mouse.click && mouse.move && mouse.pos_prev) {
             // send line to to the server
             var data = {line: [{x: mouse.pos.x, y: mouse.pos.y}, {x: mouse.pos_prev.x, y: mouse.pos_prev.y}]};
-            socket.send(JSON.stringify(data));
+            sendWhenConnected(JSON.stringify(data), 1000);
          
             mouse.move = false;
       }
