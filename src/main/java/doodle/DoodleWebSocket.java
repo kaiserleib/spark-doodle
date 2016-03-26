@@ -3,7 +3,6 @@ package doodle;
 import org.eclipse.jetty.websocket.api.*;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import java.io.*;
-import java.util.*;
 
 @WebSocket
 public class DoodleWebSocket {
@@ -22,5 +21,4 @@ public class DoodleWebSocket {
     public void message(String message) throws IOException {
         Application.broadcastMessage(message);
     }
-
 }
