@@ -14,11 +14,21 @@ document.addEventListener("DOMContentLoaded", function() {
 	var socket = new WebSocket("ws://" + location.hostname + ":" + location.port + "/doodle");
 	
 	canvas.onmousedown = function(e) {
-		mouse.click = true;
+		startDrawing();
+	};
+	
+	handleTouchStart = function(e) {
+	    startDrawing();
+	}
+	
+	startDrawing = function() {
+	    mouse.click = true;
 		
 		//re-establish the websocket on clicks so that we can keep doodling after heroku kills us
-	    socket = new WebSocket("ws://" + location.hostname + ":" + location.port + "/doodle");
-	};
+		if (socket.readyState === 0) {
+	        socket = new WebSocket("ws://" + location.hostname + ":" + location.port + "/doodle");
+	    }
+	}
 	
     sendWhenConnected = function (message, interval) {
         if (socket.readyState === 1) {
@@ -31,14 +41,35 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 	
 	canvas.onmouseup = function(e) {
-		mouse.click = false;
+		stopDrawing();
 	};
 	
+	handleTouchStop = function(e) {
+	    stopDrawing();
+	}
+	
+	stopDrawing = function() {
+	    mouse.click = false;
+	}
+	
 	canvas.onmousemove = function(e) {
-		mouse.pos.x = e.clientX;
-		mouse.pos.y = e.clientY;
-		mouse.move = true;
+		sendPenPosition(e.clientX, e.clientY);
 	};
+	
+	handleTouchMove = function(e) {
+	    sendPenPosition(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+	}
+	
+	sendPenPosition = function(xpos, ypos) {
+        mouse.pos.x = xpos;
+        mouse.pos.y = ypos;
+        mouse.move = true;
+	}
+	
+	canvas.addEventListener("touchstart", handleTouchStart, false);
+	canvas.addEventListener("touchmove", handleTouchMove, false);
+	canvas.addEventListener("touchCancel", handleTouchStop, false);
+	canvas.addEventListener("touchEnd", handleTouchStop, false);
 	
 	var eraser = document.getElementById('eraser');
 	eraser.onclick = function() {
