@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	};
 	
 	handleTouchStart = function(e) {
+	    e.preventDefault();
 	    startDrawing();
 	}
 	
@@ -79,6 +80,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	socket.onmessage = function (event) {
    		var parsedData = JSON.parse(event.data);
 		var line = parsedData.line;
+		
 		context.beginPath();
 		context.moveTo(line[0].x, line[0].y);
 		context.lineTo(line[1].x, line[1].y);
@@ -95,7 +97,11 @@ document.addEventListener("DOMContentLoaded", function() {
          
             mouse.move = false;
       }
-      mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y};
+      
+      // conditional to avoid always drawing a line from the origin on touch events
+      if (mouse.pos.x != 0) {
+          mouse.pos_prev = {x: mouse.pos.x, y: mouse.pos.y};
+      }
       setTimeout(loop, 25);
    }
    loop();
